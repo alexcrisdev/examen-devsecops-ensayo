@@ -29,11 +29,34 @@ jobs:
       - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-      - name: Buscar contraseñas y claves en todo el historial
-        uses: gitleaks/gitleaks-action@v3
+      # CLI directo (no la action): la action falla en el primer push de un repo nuevo
+      # porque intenta revisar desde el padre del commit raíz, que no existe.
+      - name: Instalar Gitleaks
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_ENABLE_COMMENTS: false
+          VERSION: 8.24.3
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
+      - name: Buscar contraseñas y claves en todo el historial
+        run: |
+          set +e
+          gitleaks git --redact --verbose --report-format sarif --report-path gitleaks.sarif .
+          codigo=$?
+          set -e
+          if [ "$codigo" -eq 0 ]; then
+            echo "## Gitleaks: sin secretos en el historial" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## Gitleaks: se encontraron secretos (ver log, valores ocultos)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$codigo"
+      - name: Guardar reporte
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-gitleaks
+          path: gitleaks.sarif
+          if-no-files-found: ignore
 
   sast:
     name: SAST (CodeQL)
