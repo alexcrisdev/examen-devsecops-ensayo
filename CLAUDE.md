@@ -9,6 +9,7 @@ Tiempo limitado (4 horas): prioriza un MVP que funcione y esté desplegado sobre
 1. `/analizar-caso`      → docs/01-analisis.md (requisitos, actores, reglas, riesgos)
 2. `/backlog-jira`       → docs/02-backlog.md + docs/jira-import.csv (épicas, HU, sprints)
 3. `/arquitectura`       → docs/03-arquitectura.md (software + hardware/infra + datos + seguridad)
+   `/diagramas-uml`      → docs/04-diagramas-uml.md (actores, casos de uso, clases, secuencia, estados...)
 4. `/modelo-datos`       → migraciones en supabase/migrations con RLS
 5. `/implementar-hu HU-XX` → una HU a la vez: rama, pruebas, código, verificación, commit, PR
 6. `/revision-seguridad` → docs/05-seguridad.md (OWASP + STRIDE + evidencias de pipeline)
