@@ -56,7 +56,7 @@ jobs:
       - name: Aplicar migraciones pendientes
         run: |
           npx supabase migration list --remote --password "$SUPABASE_DB_PASSWORD"
-          npx supabase db push --remote --password "$SUPABASE_DB_PASSWORD"
+          npx supabase db push --remote --yes --password "$SUPABASE_DB_PASSWORD"
 
   despliegue:
     name: 4. Despliegue (Vercel)
