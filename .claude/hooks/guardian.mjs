@@ -9,7 +9,6 @@ process.stdin.on("end", () => {
   } catch {
     process.exit(0);
   }
-  const herramienta = datos.tool_name ?? "";
   const input = datos.tool_input ?? {};
   const bloquear = (motivo) => {
     process.stderr.write(`BLOQUEADO por el harness: ${motivo}\n`);
