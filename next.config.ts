@@ -1,9 +1,19 @@
 import type { NextConfig } from "next";
 
+// Cabeceras de seguridad (OWASP A05). HSTS ya lo agrega Vercel.
+const cabecerasSeguridad = [
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+];
+
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  poweredByHeader: false,
+  async headers() {
+    return [{ source: "/:path*", headers: cabecerasSeguridad }];
+  },
   turbopack: {
     rules: {
       "*.css": {
