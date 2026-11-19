@@ -13,6 +13,10 @@ description: Fase 4. Diseña las tablas del caso y crea migraciones Supabase seg
    - `id uuid primary key default gen_random_uuid()` (o identity), `creado_en timestamptz default now()`.
    - FKs con `on delete` explícito; `check` para estados/montos (ej. `monto >= 0`, `estado in (...)`).
    - Índices en FKs y columnas de filtro.
+   - **GRANT explícito** (el proyecto NO da acceso automático a tablas nuevas):
+     `revoke all on public.<t> from anon, authenticated;` y luego solo lo necesario, ej.
+     `grant select, insert, update on public.<t> to authenticated;` (a `anon` solo si hay lectura
+     pública justificada). Sin GRANT la app recibe "permission denied" aunque RLS esté bien.
    - `alter table ... enable row level security;` + políticas `select/insert/update/delete` por rol
      usando `public.rol_actual()` y `(select auth.uid())`. Nada de `using (true)` salvo lectura pública justificada.
    - Funciones `security definer` siempre con `set search_path = ''` y `revoke ... from public, anon`.

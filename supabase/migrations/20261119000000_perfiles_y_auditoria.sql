@@ -11,6 +11,11 @@ create table public.perfiles (
 
 alter table public.perfiles enable row level security;
 
+-- El proyecto NO da acceso automático a tablas nuevas: se otorga lo mínimo.
+-- anon (sin login) no recibe nada. RLS filtra las filas dentro de estos permisos.
+revoke all on public.perfiles from anon, authenticated;
+grant select, update (nombre, rol) on public.perfiles to authenticated;
+
 -- Función auxiliar: rol del usuario actual. security definer evita recursión en RLS.
 create or replace function public.rol_actual()
 returns text
@@ -67,6 +72,9 @@ create table public.auditoria (
 );
 
 alter table public.auditoria enable row level security;
+
+revoke all on public.auditoria from anon, authenticated;
+grant select, insert on public.auditoria to authenticated;
 
 create policy "solo admin lee la auditoría"
   on public.auditoria for select to authenticated

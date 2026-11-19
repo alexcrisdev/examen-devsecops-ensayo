@@ -16,6 +16,14 @@ const conRls = new Set(
   [...sql.matchAll(/alter\s+table\s+(?:only\s+)?([\w."]+)\s+enable\s+row\s+level\s+security/g)].map((m) => normalizar(m[1])),
 );
 
+// Aviso (no bloquea): tabla sin GRANT = la app no la puede usar salvo con service_role.
+const conGrant = new Set(
+  [...sql.matchAll(/grant\s+[^;]*?\s+on\s+(?:table\s+)?([\w."]+)\s+to\s+[^;]*(authenticated|anon)/g)].map((m) => normalizar(m[1])),
+);
+for (const t of creadas.filter((t) => !conGrant.has(t))) {
+  console.warn(`AVISO: ${t} no tiene GRANT a authenticated/anon (solo accesible con service_role).`);
+}
+
 const sinRls = creadas.filter((t) => !conRls.has(t));
 console.log(`Tablas encontradas: ${creadas.length}. Con RLS: ${creadas.length - sinRls.length}.`);
 if (sinRls.length) {
