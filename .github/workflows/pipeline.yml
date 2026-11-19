@@ -90,6 +90,19 @@ jobs:
         id: publicar
         run: |
           url=$(vercel deploy --prebuilt $PROD --token="$VERCEL_TOKEN")
+          echo "Despliegue: $url"
+          # La URL única del despliegue está protegida por Vercel Authentication.
+          # En producción se prueba el dominio público (<proyecto>.vercel.app), que sale de la API.
+          if [ "$ENTORNO" = "production" ]; then
+            for intento in 1 2 3 4 5 6; do
+              publica=$(curl -sf -H "Authorization: Bearer $VERCEL_TOKEN" \
+                "https://api.vercel.com/v13/deployments/${url#https://}?teamId=$VERCEL_ORG_ID" \
+                | jq -r '[.alias[]? | select(endswith(".vercel.app"))] | sort_by(length) | .[0] // empty') || true
+              [ -n "$publica" ] && break
+              sleep 5
+            done
+            [ -n "$publica" ] && url="https://$publica"
+          fi
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "### Publicado ($ENTORNO): $url" >> "$GITHUB_STEP_SUMMARY"
 
@@ -112,6 +125,8 @@ jobs:
   dast:
     name: 6. DAST (OWASP ZAP)
     needs: [despliegue, smoke]
+    # Solo producción: los previews están protegidos y ZAP vería solo la pantalla de login de Vercel.
+    if: github.ref_name == 'main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
